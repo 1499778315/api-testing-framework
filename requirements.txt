@@ -6,6 +6,13 @@ requests~=2.31
 jsonschema~=4.23
 allure-pytest~=2.13
 
+# --- 本地 HTML 测试报告（可选，不依赖 Allure CLI / Java） ---
+# 用法：pytest --alluredir=reports --html=reports/report.html --self-contained-html
+# 产物 reports/report.html 为单文件自包含报告，直接双击即可在浏览器查看。
+pytest-html~=4.2
+# pytest-metadata 是 pytest-html 的依赖，显式声明以便版本可复现。
+pytest-metadata~=3.1
+
 # --- 被测系统（本地模拟 API） ---
 fastapi~=0.115
 uvicorn~=0.30
