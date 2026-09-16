@@ -1,2 +1,0 @@
-GET http://127.0.0.1:42071/api/v1/customers
-查询参数: {'segment': 'PRIVATE', 'limit': 100}

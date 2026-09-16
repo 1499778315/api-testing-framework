@@ -1,6 +1,0 @@
-POST http://127.0.0.1:42071/auth/token
-请求体:
-{
-  "client_id": "veridian-demo",
-  "client_secret": "secreto-incorrecto"
-}

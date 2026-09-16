@@ -1,7 +1,0 @@
-POST http://127.0.0.1:42071/api/v1/customers
-请求体:
-{
-  "full_name": "Nombre Valido",
-  "email": "a@b.com",
-  "segment": "GOLD"
-}
