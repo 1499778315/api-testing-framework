@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "CustomerBalances",
+  "title": "客户余额",
   "type": "object",
   "required": ["customer_id", "balances"],
   "properties": {

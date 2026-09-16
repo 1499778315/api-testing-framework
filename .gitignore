@@ -12,6 +12,7 @@ __pycache__/
 # --- Salidas de ejecución (regenerables) ---
 allure-results/
 allure-report/
+reports/
 .coverage
 htmlcov/
 

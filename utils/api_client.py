@@ -1,9 +1,8 @@
 """
-Cliente HTTP delgado sobre ``requests`` para las pruebas de API.
+基于 ``requests`` 的轻量 HTTP 客户端，供接口测试使用。
 
-Centraliza la URL base, la inyección del token Bearer y el registro de cada
-request/response como evidencia en Allure. Mantener esto fuera de los tests
-hace que los casos queden declarativos y legibles.
+集中管理基础 URL、Bearer token 注入，并把每次请求/响应作为证据记录到
+Allure 报告。将这些逻辑放在测试之外，可以让用例保持声明式、易读。
 """
 from __future__ import annotations
 
@@ -26,8 +25,8 @@ class APIClient:
         url = f"{self.base_url}{path}"
         with allure.step(f"{method} {path}"):
             response = self.session.request(method, url, timeout=self.timeout, **kwargs)
-            _attach("Request", _format_request(method, url, kwargs))
-            _attach("Response", _format_response(response))
+            _attach("请求", _format_request(method, url, kwargs))
+            _attach("响应", _format_response(response))
             return response
 
     def get(self, path: str, **kwargs) -> requests.Response:
@@ -50,9 +49,9 @@ def _attach(name: str, body: str) -> None:
 def _format_request(method: str, url: str, kwargs: dict) -> str:
     lines = [f"{method} {url}"]
     if "params" in kwargs and kwargs["params"]:
-        lines.append(f"Query params: {kwargs['params']}")
+        lines.append(f"查询参数: {kwargs['params']}")
     if "json" in kwargs and kwargs["json"] is not None:
-        lines.append("Body:\n" + json.dumps(kwargs["json"], indent=2, ensure_ascii=False))
+        lines.append("请求体:\n" + json.dumps(kwargs["json"], indent=2, ensure_ascii=False))
     return "\n".join(lines)
 
 

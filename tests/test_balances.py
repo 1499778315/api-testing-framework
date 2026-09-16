@@ -1,14 +1,14 @@
-"""Pruebas del recurso de saldos, incluyendo una validación de regla de negocio."""
+"""余额资源测试，包括一条业务规则校验（份额占比合计 100%）。"""
 import allure
 import pytest
 
 
-@allure.feature("Saldos")
+@allure.feature("余额")
 class TestBalances:
 
-    @allure.story("Consulta")
-    @allure.title("Obtener los saldos de un cliente existente")
-    def test_get_balances(self, client):
+    @allure.story("查询")
+    @allure.title("获取已有客户的余额")
+    def test_获取已有客户的余额(self, client):
         response = client.get("/api/v1/customers/1/balances")
         assert response.status_code == 200
         body = response.json()
@@ -18,19 +18,19 @@ class TestBalances:
             assert b["fund"] in {"A", "B", "C", "D", "E"}
             assert b["balance_clp"] >= 0
 
-    @allure.story("Regla de negocio")
-    @allure.title("La distribución porcentual de los saldos suma 100%")
+    @allure.story("业务规则")
+    @allure.title("余额份额占比合计为 100%")
     @pytest.mark.parametrize("customer_id", [1, 5, 10, 15])
-    def test_share_distribution_sums_100(self, client, customer_id):
+    def test_份额占比合计为100(self, client, customer_id):
         response = client.get(f"/api/v1/customers/{customer_id}/balances")
         assert response.status_code == 200
         balances = response.json()["balances"]
-        if balances:  # algunos clientes podrían no tener saldos
+        if balances:  # 部分客户可能没有余额
             total_pct = sum(b["share_pct"] for b in balances)
-            assert abs(total_pct - 100.0) <= 0.1, f"La distribución suma {total_pct}%, no 100%."
+            assert abs(total_pct - 100.0) <= 0.1, f"份额占比合计 {total_pct}%，而非 100%。"
 
-    @allure.story("Consulta")
-    @allure.title("Obtener saldos de un cliente inexistente devuelve 404")
-    def test_balances_unknown_customer_returns_404(self, client):
+    @allure.story("查询")
+    @allure.title("获取不存在客户的余额返回 404")
+    def test_不存在客户的余额返回404(self, client):
         response = client.get("/api/v1/customers/999999/balances")
         assert response.status_code == 404

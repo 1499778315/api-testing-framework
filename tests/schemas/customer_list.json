@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "CustomerList",
+  "title": "客户列表",
   "type": "object",
   "required": ["items", "total", "limit", "offset"],
   "properties": {

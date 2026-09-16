@@ -11,19 +11,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: 安装 Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: pip
 
-      - name: Install dependencies
+      - name: 安装依赖
         run: pip install -r requirements.txt
 
-      - name: Run API test suite
+      - name: 运行 API 测试套件
         run: pytest --alluredir=allure-results
 
-      - name: Upload Allure results
+      - name: 上传 Allure 结果
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -31,36 +31,36 @@ jobs:
           path: allure-results
 
   # ---------------------------------------------------------------------
-  # Publica el reporte Allure navegable en GitHub Pages (solo push a main).
+  # 把可浏览的 Allure 报告发布到 GitHub Pages（仅 push 到 main 时）。
   # ---------------------------------------------------------------------
   publish-report:
-    name: Publish Allure report
+    name: 发布 Allure 报告
     needs: api-tests
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - name: Download Allure results
+      - name: 下载 Allure 结果
         uses: actions/download-artifact@v4
         with:
           name: allure-results
           path: allure-results
 
-      - name: Restore Allure history
+      - name: 恢复 Allure 历史记录
         uses: actions/checkout@v4
         continue-on-error: true
         with:
           ref: gh-pages
           path: gh-pages
 
-      - name: Build Allure report (con histórico)
+      - name: 生成 Allure 报告（带历史趋势）
         run: |
           npm install -g allure-commandline
           if [ -d gh-pages/history ]; then cp -r gh-pages/history allure-results/; fi
           allure generate allure-results -o allure-report --clean
 
-      - name: Publish to GitHub Pages
+      - name: 发布到 GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}

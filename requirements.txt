@@ -1,11 +1,11 @@
-# Framework de pruebas de API + API de demostración (autocontenido).
+# 接口测试框架 + 演示 API（自包含）。
 
-# --- Pruebas ---
+# --- 测试 ---
 pytest~=8.3
 requests~=2.31
 jsonschema~=4.23
 allure-pytest~=2.13
 
-# --- Sistema bajo prueba (API mock local) ---
+# --- 被测系统（本地模拟 API） ---
 fastapi~=0.115
 uvicorn~=0.30

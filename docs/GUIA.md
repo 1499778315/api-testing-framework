@@ -1,84 +1,81 @@
-# 📘 Guía detallada (para todos los niveles)
+# 📘 详细入门指南（适合所有水平）
 
-Esta guía explica **paso a paso** cómo ejecutar, entender y editar el proyecto
-**api-testing-framework**, desde tu computador hasta lo que ocurre en GitHub
-cuando se ejecuta el CI. Pensada para que **alguien junior** pueda hacerlo sin
-complicaciones.
+本指南**一步步**讲解如何运行、理解并修改 **api-testing-framework** 项目，
+从你的电脑到 GitHub 上 CI 执行时发生的一切。目标是让**初级开发者**也能
+毫无障碍地完成。
 
-> Orden sugerido: **1)** ¿Qué es? → **2)** Glosario → **3)** Frameworks →
-> **4)** Requisitos → **5)** Clonar → **6)** Ejecución local → **7)** Reportes →
-> **8)** Cómo editar → **9)** Qué hace el CI.
+> 建议阅读顺序：**1)** 这是什么？→ **2)** 术语表 → **3)** 框架 → **4)** 前置条件 →
+> **5)** 克隆 → **6)** 本地运行 → **7)** 报告 → **8)** 如何修改 → **9)** CI 做了什么。
 
 ---
 
-## 1. ¿Qué es este proyecto?
+## 1. 这是什么项目？
 
-Es un framework para **probar APIs REST** (servicios que devuelven datos por
-HTTP, normalmente en JSON). Verifica que la API responda lo correcto: los
-**códigos de estado** correctos (200, 401, 404, 422…), el **cuerpo** esperado,
-reglas de **seguridad** (autenticación), **límites** (paginación) y que el
-**contrato** (la forma del JSON) no cambie sin avisar.
+这是一个用于**测试 REST API**（通过 HTTP 返回数据、通常是 JSON 的服务）的框架。
+它校验 API 是否返回正确内容：正确的**状态码**（200、401、404、422…）、预期的
+**响应体**、**安全**规则（认证）、**边界**（分页），以及**契约**（JSON 的形状）
+是否未经通知就发生变化。
 
-Trae **su propia API de prueba** (un servicio **FastAPI** que se levanta solo en
-un puerto local), así que **corre sin depender de servicios externos**. Usa
-**pytest** y genera reportes **Allure** con la petición y respuesta de cada test.
+它自带**测试用 API**（一个自动在本地端口启动的 **FastAPI** 服务），因此
+**运行不依赖任何外部服务**。使用 **pytest**，并通过 **Allure** 生成带每个测试
+请求/响应细节的报告。
 
 ```
-pytest ─► tests/*.py ─► utils/api_client (HTTP) ─► FastAPI app (app/) ─► Allure
+pytest ─► tests/*.py ─► utils/api_client (HTTP) ─► FastAPI 应用 (app/) ─► Allure
 ```
 
 ---
 
-## 2. Glosario (términos clave)
+## 2. 术语表（关键概念）
 
-| Término | Qué significa, en simple |
+| 术语 | 简单解释 |
 |---------|--------------------------|
-| **API REST** | Un servicio al que le pides datos por HTTP (ej. `GET /api/customers`). |
-| **Endpoint** | Una ruta de la API (ej. `POST /api/auth/token`). |
-| **Código de estado** | El número que indica el resultado: `200` OK, `401` no autorizado, `404` no existe, `422` datos inválidos. |
-| **Payload / Body** | El contenido (JSON) que se envía o se recibe. |
-| **Token / Bearer** | Una "credencial" que se manda en la cabecera para autenticarse. |
-| **Contract testing** | Verificar que la respuesta cumple una **forma** definida (JSON Schema). |
-| **JSON Schema** | Un documento que describe cómo debe ser un JSON (campos, tipos, obligatorios). |
-| **Happy path** | El camino correcto/exitoso. |
-| **Negative path** | Casos de error a propósito (token malo, datos inválidos…). |
-| **Boundary** | Casos límite (ej. pedir página 0 o un tamaño fuera de rango). |
-| **pytest** | El framework de pruebas de Python. |
-| **Fixture** | Pieza reutilizable que prepara algo (aquí, levantar la API antes de las pruebas). |
-| **Parametrize** | Repetir un test con varios datos distintos (data-driven). |
-| **SUT** | *System Under Test*, el sistema bajo prueba (aquí, la API FastAPI de `app/`). |
-| **Allure** | Reporte interactivo con el detalle de cada prueba (request/response). |
-| **CI** | Automatización que corre las pruebas en GitHub en cada cambio. |
-| **gh-pages** | Rama donde se publica el reporte Allure como sitio web. |
+| **API REST** | 通过 HTTP 提供数据的服务（如 `GET /api/customers`）。 |
+| **Endpoint（端点）** | API 的一条路由（如 `POST /api/auth/token`）。 |
+| **状态码** | 表示结果的数字：`200` 成功、`401` 未授权、`404` 不存在、`422` 数据非法。 |
+| **Payload / Body（请求体）** | 发送或接收的内容（JSON）。 |
+| **Token / Bearer** | 放在请求头中用于认证的"凭据"。 |
+| **契约测试** | 校验响应是否符合约定的**形状**（JSON Schema）。 |
+| **JSON Schema** | 描述 JSON 应长什么样的文档（字段、类型、必填项）。 |
+| **Happy path（正向路径）** | 正确/成功的路径。 |
+| **Negative path（反向路径）** | 刻意构造的错误场景（错误 token、非法数据…）。 |
+| **Boundary（边界）** | 极限场景（如请求第 0 页或超范围的大小）。 |
+| **pytest** | Python 的测试框架。 |
+| **Fixture** | 可复用的准备件（这里指：测试前启动 API）。 |
+| **Parametrize（参数化）** | 用多组数据重复执行一个测试（数据驱动）。 |
+| **SUT** | *System Under Test*，被测系统（这里指 `app/` 下的 FastAPI API）。 |
+| **Allure** | 交互式报告，展示每个测试的详情（请求/响应）。 |
+| **CI** | 每次变更时自动在 GitHub 上运行测试。 |
+| **gh-pages** | 用于把 Allure 报告发布为网站的分支。 |
 
 ---
 
-## 3. Frameworks y lenguajes (para qué sirve cada uno)
+## 3. 框架与语言（各自的作用）
 
-| Herramienta | Lenguaje | ¿Para qué sirve **en este proyecto**? |
+| 工具 | 语言 | 在本项目中**起什么作用** |
 |-------------|----------|----------------------------------------|
-| **Python** | — | Lenguaje base del framework. |
-| **pytest** | Python | El **ejecutor** de pruebas. |
-| **requests** | Python | Cliente HTTP: hace las llamadas a la API. |
-| **jsonschema** | Python | Valida que las respuestas cumplan el **contrato** (JSON Schema). |
-| **allure-pytest** | Python | Genera el reporte **Allure** y adjunta request/response. |
-| **FastAPI** | Python | El **SUT**: la API de prueba con sus endpoints. |
-| **Uvicorn** | Python | El **servidor** que levanta la API FastAPI en un puerto local. |
-| **GitHub Actions** | YAML | El **CI**: corre las pruebas y publica el reporte. |
+| **Python** | — | 框架的基础语言。 |
+| **pytest** | Python | 测试**执行器**。 |
+| **requests** | Python | HTTP 客户端：发起对 API 的调用。 |
+| **jsonschema** | Python | 校验响应是否符合**契约**（JSON Schema）。 |
+| **allure-pytest** | Python | 生成 **Allure** 报告并附加请求/响应。 |
+| **FastAPI** | Python | **被测系统（SUT）**：带端点的测试用 API。 |
+| **Uvicorn** | Python | 在本地端口启动 FastAPI API 的**服务器**。 |
+| **GitHub Actions** | YAML | **CI**：运行测试并发布报告。 |
 
 ---
 
-## 4. Requisitos previos
+## 4. 前置条件
 
-1. **Python 3.10+** → https://www.python.org/downloads/ (`python --version`).
+1. **Python 3.10+** → https://www.python.org/downloads/ （`python --version` 验证）。
 2. **Git** → https://git-scm.com/
-3. *(Opcional, para el dashboard)* **Allure CLI** → `npm install -g allure-commandline`.
+3. *（可选，用于报告面板）* **Allure CLI** → `npm install -g allure-commandline`。
 
-> No necesitas configurar nada externo: la API de prueba se levanta **sola**.
+> 无需配置任何外部内容：测试用 API 会**自动**启动。
 
 ---
 
-## 5. Clonar el proyecto
+## 5. 克隆项目
 
 ```bash
 git clone https://github.com/d4tr3s14/api-testing-framework.git
@@ -87,65 +84,64 @@ cd api-testing-framework
 
 ---
 
-## 6. Ejecución LOCAL paso a paso
+## 6. 本地运行（分步）
 
-### Paso 1 — Entorno virtual e instalación
+### 第 1 步 — 虚拟环境与安装
 ```bash
 python -m venv .venv
 ```
-Actívalo:
-- **Windows (PowerShell):** `.\.venv\Scripts\Activate.ps1`
-- **Linux / macOS:** `source .venv/bin/activate`
+激活：
+- **Windows（PowerShell）：** `.\.venv\Scripts\Activate.ps1`
+- **Linux / macOS：** `source .venv/bin/activate`
 
-Instala dependencias:
+安装依赖：
 ```bash
 pip install -r requirements.txt
 ```
 
-### Paso 2 — Ejecutar las pruebas
+### 第 2 步 — 运行测试
 ```bash
 pytest
 ```
-La API de prueba se **levanta automáticamente** (no tienes que iniciarla tú).
-Verás algo como `39 passed in ~2s`.
+测试用 API 会**自动启动**（无需手动启动）。你会看到类似 `39 passed in ~2s` 的结果。
 
-### Paso 3 — Con dashboard Allure (un comando)
-- **Windows (PowerShell):** `.\scripts\run_demo.ps1`
-- **Linux / macOS:** `./scripts/run_demo.sh`
+### 第 3 步 — 带 Allure 报告面板（一条命令）
+- **Windows（PowerShell）：** `.\scripts\run_demo.ps1`
+- **Linux / macOS：** `./scripts/run_demo.sh`
 
-O manualmente:
+或手动执行：
 ```bash
 pytest --alluredir=allure-results
 allure serve allure-results
 ```
 
-### Explorar la API a mano (opcional)
+### 手动体验 API（可选）
 ```bash
 uvicorn app.main:app --reload
-# luego abre http://127.0.0.1:8000/docs  (documentación interactiva Swagger)
+# 然后打开 http://127.0.0.1:8000/docs  （交互式 Swagger 文档）
 ```
 
 ---
 
-## 7. Reportes
+## 7. 报告
 
-- **Allure** muestra cada prueba con su **petición y respuesta** adjuntas, así
-  cualquier resultado es trazable. Ábrelo con `allure serve allure-results`.
+- **Allure** 展示每个测试及其附带的**请求和响应**，任何结果都可追溯。
+  用 `allure serve allure-results` 打开。
 
 ---
 
-## 8. Cómo EDITAR el proyecto (recetas para junior)
+## 8. 如何修改项目（初级配方）
 
-### a) Agregar una prueba nueva
-Crea o edita un archivo en `tests/` (deben empezar con `test_`). Ejemplo:
+### a) 新增一条测试
+在 `tests/` 下创建或编辑文件（必须以 `test_` 开头）。示例：
 ```python
 def test_health_ok(api_client):
     resp = api_client.get("/health")
     assert resp.status_code == 200
 ```
-`pytest` lo descubre automáticamente.
+`pytest` 会自动发现它。
 
-### b) Pruebas data-driven (varios casos)
+### b) 数据驱动测试（多组用例）
 ```python
 import pytest
 
@@ -155,68 +151,68 @@ def test_pagination_out_of_range(api_client, page_size):
     assert resp.status_code == 422
 ```
 
-### c) Agregar/editar un contrato (JSON Schema)
-Los esquemas viven en `tests/schemas/`. Crea uno nuevo (ej. `order.json`) y
-valídalo en una prueba con `utils/schema_validator.py`.
+### c) 新增/修改契约（JSON Schema）
+契约文件位于 `tests/schemas/`。新建一个（如 `order.json`），并在测试中用
+`utils/schema_validator.py` 校验它。
 
-### d) Agregar un endpoint a la API de prueba
-Edita `app/main.py` (las rutas) y `app/data.py` (los datos en memoria).
+### d) 给测试用 API 新增端点
+编辑 `app/main.py`（路由）和 `app/data.py`（内存数据）。
 
-### e) Entender dónde está cada cosa
-- `tests/*.py` → las pruebas (el **qué**).
-- `utils/api_client.py` → el cliente HTTP que usan las pruebas.
-- `utils/schema_validator.py` → valida respuestas contra JSON Schema.
-- `conftest.py` → **levanta la API** antes de las pruebas y la apaga al final.
-- `app/` → la API FastAPI bajo prueba.
-
----
-
-## 9. ¿Qué hace el CI en GitHub? (paso a paso)
-
-El CI vive en `.github/workflows/ci.yml` y corre en cada `push`/`pull request`:
-
-1. **Set up Python + install** — instala Python y `requirements.txt`.
-2. **Run API test suite** — `pytest --alluredir=allure-results` (la API se
-   levanta sola dentro de las pruebas).
-3. **Upload Allure results** — guarda los resultados como artefacto descargable.
-4. **Job `publish-report` (solo en push)** — genera el reporte **Allure** y lo
-   **publica en GitHub Pages** (rama `gh-pages`).
-
-### ¿Dónde veo el resultado?
-- GitHub → pestaña **Actions** → el run (✅ / ❌).
-- Reporte Allure en vivo: **https://d4tr3s14.github.io/api-testing-framework/**
-  (requiere GitHub Pages activado en *Settings → Pages → rama `gh-pages`*).
+### e) 了解各部分的位置
+- `tests/*.py` → 测试（**做什么**）。
+- `utils/api_client.py` → 测试使用的 HTTP 客户端。
+- `utils/schema_validator.py` → 按 JSON Schema 校验响应。
+- `conftest.py` → 测试前**启动 API**、结束后关闭。
+- `app/` → 被测的 FastAPI API。
 
 ---
 
-## 10. Problemas comunes
+## 9. GitHub 上的 CI 做了什么？（分步）
 
-| Problema | Solución |
+CI 位于 `.github/workflows/ci.yml`，在每次 `push`/`pull request` 时运行：
+
+1. **Set up Python + install** — 安装 Python 与 `requirements.txt`。
+2. **Run API test suite** — `pytest --alluredir=allure-results`（API 在测试内部
+   自动启动）。
+3. **Upload Allure results** — 把结果作为可下载的工件保存。
+4. **Job `publish-report`（仅在 push 时）** — 生成 **Allure** 报告并
+   **发布到 GitHub Pages**（`gh-pages` 分支）。
+
+### 在哪里看结果？
+- GitHub → **Actions** 标签页 → 对应 run（✅ / ❌）。
+- 在线 Allure 报告：**https://d4tr3s14.github.io/api-testing-framework/**
+  （需在 *Settings → Pages → 分支 `gh-pages`* 中启用 GitHub Pages）。
+
+---
+
+## 10. 常见问题
+
+| 问题 | 解决方法 |
 |----------|----------|
-| `pytest: command not found` | Activa el `.venv` y `pip install -r requirements.txt`. |
-| Las pruebas no encuentran la API | La levanta `conftest.py` sola; si falla, revisa que el puerto esté libre. |
-| `allure: command not found` | Instala el CLI: `npm install -g allure-commandline`. |
-| PowerShell bloquea el script | `Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned`. |
-| El badge de Allure da 404 | Falta activar GitHub Pages (rama `gh-pages`). |
+| `pytest: command not found` | 激活 `.venv` 并 `pip install -r requirements.txt`。 |
+| 测试找不到 API | `conftest.py` 会自动启动；若失败，检查端口是否被占用。 |
+| `allure: command not found` | 安装 CLI：`npm install -g allure-commandline`。 |
+| PowerShell 阻止脚本 | `Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned`。 |
+| Allure 徽章返回 404 | 未启用 GitHub Pages（`gh-pages` 分支）。 |
 
 ---
 
-## 11. Mapa de archivos
+## 11. 文件地图
 
 ```
-tests/                 las pruebas (test_auth, test_customers, test_balances, ...)
-  schemas/             contratos JSON Schema para las respuestas
+tests/                 测试（test_auth、test_customers、test_balances、...）
+  schemas/             响应的 JSON Schema 契约
 utils/
-  api_client.py        cliente HTTP que usan las pruebas
-  schema_validator.py  valida respuestas contra JSON Schema
-app/                   la API FastAPI bajo prueba (main.py = rutas, data.py = datos)
-conftest.py            levanta/apaga la API automáticamente para las pruebas
-pytest.ini             configuración de pytest
-scripts/run_demo.*     corre la suite y abre Allure
-.github/workflows/ci.yml  el pipeline de CI
+  api_client.py        测试使用的 HTTP 客户端
+  schema_validator.py  按 JSON Schema 校验响应
+app/                   被测的 FastAPI API（main.py = 路由，data.py = 数据）
+conftest.py            自动为测试启动/关闭 API
+pytest.ini            pytest 配置
+scripts/run_demo.*     运行测试套件并打开 Allure
+.github/workflows/ci.yml  CI 流水线
 ```
 
 ---
 
-¿Dudas? Empieza por la **sección 6** (instalar y `pytest`): la API se levanta
-sola, así que verás resultados en segundos.
+有疑问？从**第 6 节**开始（安装并运行 `pytest`）：API 会自动启动，几秒钟内
+就能看到结果。

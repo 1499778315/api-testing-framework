@@ -1,13 +1,12 @@
 """
-API REST de demostración: plataforma de inversión ficticia "Veridian".
+演示用 REST API：虚构的多基金投资平台 "Veridian"。
 
-Es el *sistema bajo prueba* (SUT) del framework. Se ejecuta localmente, por lo
-que la suite de pruebas no depende de ningún servicio externo y es totalmente
-reproducible (igual que el backend DuckDB del proyecto data-quality-framework).
+它是本框架的*被测系统*（SUT）。完全在本地运行，因此测试套件不依赖任何
+外部服务，结果可完全复现（与 data-quality-framework 项目在数据库层的
+验证形成呼应）。
 
-Expone autenticación por token Bearer, recursos paginados, validación de
-cuerpo (422) y errores controlados (401/404), pensados para ejercitar pruebas
-positivas, negativas, de borde y de contrato.
+提供 Bearer token 认证、分页资源、请求体校验（422）以及可控错误
+（401/404），用于覆盖正向、反向、边界和契约测试场景。
 """
 from __future__ import annotations
 
@@ -15,18 +14,19 @@ import uuid
 from enum import Enum
 from typing import Optional
 
-from fastapi import Depends, FastAPI, Header, HTTPException, Query, status
+from fastapi import Depends, FastAPI, HTTPException, Query, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, Field
 
 from app import data
 
-app = FastAPI(title="Veridian Investment API", version="1.0.0")
+app = FastAPI(title="Veridian 投资平台 API（测试演示）", version="1.0.0")
 
-# Tokens emitidos en esta ejecución (almacén en memoria del mock).
+# 本次运行中已签发的 token（mock 的内存存储）。
 _ISSUED_TOKENS: set[str] = set()
 
 
-# --------------------------- Modelos ---------------------------------------
+# --------------------------- 数据模型 ---------------------------------------
 class Segment(str, Enum):
     RETAIL = "RETAIL"
     PREMIUM = "PREMIUM"
@@ -76,26 +76,35 @@ class CustomerList(BaseModel):
     offset: int
 
 
-# --------------------------- Seguridad -------------------------------------
-def require_auth(authorization: Optional[str] = Header(default=None)):
-    """Valida el token Bearer. Devuelve 401 si falta o es inválido."""
-    if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Falta el token de autenticación.",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    token = authorization.split(" ", 1)[1].strip()
-    if token not in _ISSUED_TOKENS:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token inválido o expirado.",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    return token
+# --------------------------- 安全方案 ---------------------------------------
+# 在 OpenAPI 中声明该安全方案后，Swagger UI 会显示 "Authorize" 按钮
+# （所有受保护资源共用一次授权），而不是在每个端点上重复填写请求头。
+# auto_error=False 让 401 由本依赖统一抛出（自定义错误消息），
+# 而不是使用 FastAPI 默认返回的 403。
+_bearer_scheme = HTTPBearer(
+    auto_error=False,
+    description="通过 POST /auth/token 获取的 Bearer token（Swagger 会自动补上 'Bearer ' 前缀）。",
+)
 
 
-# --------------------------- Endpoints -------------------------------------
+def require_auth(credentials: Optional[HTTPAuthorizationCredentials] = Depends(_bearer_scheme)):
+    """校验 Bearer token，缺失或无效时返回 401。"""
+    if credentials is None or credentials.scheme.lower() != "bearer":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="缺少认证 token。",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    if credentials.credentials not in _ISSUED_TOKENS:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="token 无效或已过期。",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return credentials.credentials
+
+
+# --------------------------- 接口端点 ---------------------------------------
 @app.get("/health")
 def health():
     return {"status": "ok"}
@@ -106,7 +115,7 @@ def issue_token(body: TokenRequest):
     if body.client_id != data.DEMO_CLIENT_ID or body.client_secret != data.DEMO_CLIENT_SECRET:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Credenciales inválidas.",
+            detail="凭据无效。",
         )
     token = uuid.uuid4().hex
     _ISSUED_TOKENS.add(token)
@@ -133,7 +142,7 @@ def get_customer(customer_id: int, _: str = Depends(require_auth)):
     customer = data.CUSTOMERS.get(customer_id)
     if not customer:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"Cliente {customer_id} no encontrado.")
+                            detail=f"客户 {customer_id} 不存在。")
     return customer
 
 
@@ -146,5 +155,5 @@ def create_customer(body: CustomerCreate, _: str = Depends(require_auth)):
 def get_balances(customer_id: int, _: str = Depends(require_auth)):
     if customer_id not in data.CUSTOMERS:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"Cliente {customer_id} no encontrado.")
+                            detail=f"客户 {customer_id} 不存在。")
     return {"customer_id": customer_id, "balances": data.BALANCES.get(customer_id, [])}
