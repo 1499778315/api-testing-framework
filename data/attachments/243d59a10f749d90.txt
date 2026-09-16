@@ -1,5 +1,0 @@
-POST http://127.0.0.1:37579/auth/token
-请求体:
-{
-  "client_id": "solo-id"
-}
