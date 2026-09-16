@@ -1,11 +1,11 @@
 # 接口自动化测试框架（API Testing Framework）
 
-[![CI](https://github.com/d4tr3s14/api-testing-framework/actions/workflows/ci.yml/badge.svg)](https://github.com/d4tr3s14/api-testing-framework/actions/workflows/ci.yml)
+[![CI](https://github.com/1499778315/api-testing-framework/actions/workflows/ci.yml/badge.svg)](https://github.com/1499778315/api-testing-framework/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)
 ![pytest](https://img.shields.io/badge/tested%20with-pytest-0a9edc.svg)
 ![Contract testing](https://img.shields.io/badge/contracts-JSON%20Schema-6f42c1.svg)
 ![Reporting](https://img.shields.io/badge/reporting-Allure-orange.svg)
-[![Allure Report](https://img.shields.io/badge/Allure-live%20report-fa4d56?logo=allure)](https://d4tr3s14.github.io/api-testing-framework/)
+[![Allure Report](https://img.shields.io/badge/Allure-live%20report-fa4d56?logo=allure)](https://1499778315.github.io/api-testing-framework/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 > 📘 第一次接触或初级水平？先读 **[详细入门指南](docs/GUIA.md)**
@@ -118,6 +118,11 @@ uvicorn app.main:app --reload
 `POST /auth/token` 的演示账号：`client_id=veridian-demo`、
 `client_secret=demo-secret`。
 
+受保护接口需要 Bearer token：先调用 `POST /auth/token` 拿到 `access_token`，
+再点 Swagger 右上角的 **Authorize** 按钮粘贴该 token
+（**不要**自己加 `Bearer ` 前缀，Swagger 会自动补上），之后所有受保护接口
+都会自动携带这个凭证，无需逐端点填写请求头。
+
 ## 项目结构
 
 ```
@@ -165,3 +170,23 @@ api-testing-framework/
 ## 许可证
 
 [MIT](LICENSE)
+
+## 致谢
+
+本项目基于 [d4tr3s14/api-testing-framework](https://github.com/d4tr3s14/api-testing-framework)
+（MIT License, Copyright (c) 2025 David Leiva）改造而来，原作者提供了完整的框架设计：
+自包含的 FastAPI 被测系统、fixtures 的组织方式，以及功能 / 安全 / 边界 / 契约
+四类测试的划分。
+
+本仓库在此基础上完成的工作：
+
+- **中文本地化** —— 文档、代码注释、接口文案、JSON Schema 描述与测试用例名
+- **鉴权方案改进** —— 安全方案在 OpenAPI 中声明为 `HTTPBearer(auto_error=False)`：
+  Swagger UI 出现 `Authorize` 按钮，可全局一次授权，不必逐端点填写请求头；
+  同时保留原有 `401` 语义（自定义文案 + `WWW-Authenticate: Bearer`）
+  与 `422` 请求体校验行为
+- **验证** —— `pytest`：39 passed；并手工回归了 6 种鉴权边界场景
+  （无 token / 错误 token / `Bearer` 大小写 / `Basic` 方案 / 裸 token / 正确 token）
+
+感谢原作者的框架设计。
+

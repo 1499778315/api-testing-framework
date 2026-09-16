@@ -78,7 +78,7 @@ pytest ─► tests/*.py ─► utils/api_client (HTTP) ─► FastAPI 应用 (a
 ## 5. 克隆项目
 
 ```bash
-git clone https://github.com/d4tr3s14/api-testing-framework.git
+git clone https://github.com/1499778315/api-testing-framework.git
 cd api-testing-framework
 ```
 
@@ -180,7 +180,7 @@ CI 位于 `.github/workflows/ci.yml`，在每次 `push`/`pull request` 时运行
 
 ### 在哪里看结果？
 - GitHub → **Actions** 标签页 → 对应 run（✅ / ❌）。
-- 在线 Allure 报告：**https://d4tr3s14.github.io/api-testing-framework/**
+- 在线 Allure 报告：**https://1499778315.github.io/api-testing-framework/**
   （需在 *Settings → Pages → 分支 `gh-pages`* 中启用 GitHub Pages）。
 
 ---
