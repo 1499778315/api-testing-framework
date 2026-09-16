@@ -7,8 +7,11 @@ jsonschema~=4.23
 allure-pytest~=2.13
 
 # --- 本地 HTML 测试报告（可选，不依赖 Allure CLI / Java） ---
-# 用法：pytest --alluredir=reports --html=reports/report.html --self-contained-html
-# 产物 reports/report.html 为单文件自包含报告，直接双击即可在浏览器查看。
+# 用法：pytest --alluredir=reports/allure-results --clean-alluredir --html=reports/report.html --self-contained-html
+# 产物：reports/report.html         单文件自包含报告，直接双击即可在浏览器查看
+#       reports/allure-results/    Allure 原始 JSON，可用 allure serve reports/allure-results 打开
+# 说明：report.html 每次运行都会被覆盖；allure-results/ 里是随机 UUID 文件名，
+#       加 --clean-alluredir 会在每次运行前清空，避免多轮结果混在一起。
 pytest-html~=4.2
 # pytest-metadata 是 pytest-html 的依赖，显式声明以便版本可复现。
 pytest-metadata~=3.1

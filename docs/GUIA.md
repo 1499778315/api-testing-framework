@@ -128,6 +128,25 @@ uvicorn app.main:app --reload
 - **Allure** 展示每个测试及其附带的**请求和响应**，任何结果都可追溯。
   用 `allure serve allure-results` 打开。
 
+- **HTML 报告（不需要 Allure CLI，也不需要 Java）**：一条命令生成后，
+  **双击** `reports/report.html` 就能看（单文件自包含，不用起本地服务）：
+
+  ```bash
+  pytest --alluredir=reports/allure-results --clean-alluredir --html=reports/report.html --self-contained-html
+  ```
+
+  产物统一放在 `reports/` 下（已在 `.gitignore` 中，不会提交）：
+
+  ```
+  reports/
+  ├── report.html          # 自包含 HTML 报告，直接双击打开
+  └── allure-results/      # Allure 原始 JSON（可 allure serve reports/allure-results）
+  ```
+
+  两个容易踩的坑：`report.html` **每次运行都会被覆盖**（同名文件，旧报告不留）；
+  `allure-results/` 里的文件名是随机 UUID，**不加 `--clean-alluredir` 就会把多轮
+  结果混在一起**（越跑文件越多），加上它则每次运行前自动清空。
+
 ---
 
 ## 8. 如何修改项目（初级配方）
